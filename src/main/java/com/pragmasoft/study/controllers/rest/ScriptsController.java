@@ -3,7 +3,13 @@ package com.pragmasoft.study.controllers.rest;
 
 import com.pragmasoft.study.services.JavaScriptService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -24,7 +30,7 @@ public class ScriptsController {
     }
 
     @GetMapping("/scripts")
-    public String[] getAllScripts(@RequestParam("code") String code) {
+    public String[] getAllScripts() {
 
         //TODO
         return javaScriptService.getAllScripts();
