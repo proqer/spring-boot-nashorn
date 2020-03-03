@@ -1,39 +1,48 @@
 package com.pragmasoft.study.services.impl;
 
+import com.pragmasoft.study.model.ScriptModel;
 import com.pragmasoft.study.services.JavaScriptService;
 import org.springframework.stereotype.Service;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class JavaScriptServiceImpl implements JavaScriptService {
 
+    private List<ScriptModel> scriptModels = new ArrayList<>();
+
     @Override
-    public String addScript(String script) {
-        String id = UUID.randomUUID().toString();
+    public ScriptModel addScript(String script) {
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
-
         //TODO
-        return id;
+        ScriptModel scriptModel = new ScriptModel();
+        scriptModel.setId(UUID.randomUUID().toString());
+        scriptModels.add(scriptModel);
+        return scriptModel;
     }
 
     @Override
-    public String[] getAllScripts() {
+    public ScriptModel[] getAllScripts() {
         //TODO
-        return new String[]{"some"};
+        return scriptModels.toArray(new ScriptModel[0]);
     }
 
     @Override
-    public String getScriptById(String id) {
+    public Optional<ScriptModel> getScriptById(String id) {
         //TODO
-        return id;
+        return scriptModels.stream()
+                .filter((scriptModel) -> scriptModel.getId().equals(id))
+                .findFirst();
     }
 
     @Override
-    public String deleteById(String id) {
+    public boolean deleteById(String id) {
         //TODO
-        return id;
+        return scriptModels.removeIf((scriptModel) -> scriptModel.getId().equals(id));
     }
 }

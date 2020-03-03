@@ -1,13 +1,17 @@
 package com.pragmasoft.study.services;
 
+import com.pragmasoft.study.model.ScriptModel;
+
+import java.util.Optional;
+
 public interface JavaScriptService {
 
-    String addScript(String script);
+    ScriptModel addScript(String script);
 
-    String[] getAllScripts();
+    ScriptModel[] getAllScripts();
 
-    String getScriptById(String id);
+    Optional<ScriptModel> getScriptById(String id);
 
-    String deleteById(String id);
+    boolean deleteById(String id);
 
 }
