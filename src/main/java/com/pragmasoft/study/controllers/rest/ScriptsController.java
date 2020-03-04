@@ -1,8 +1,7 @@
 package com.pragmasoft.study.controllers.rest;
 
-
 import com.pragmasoft.study.model.ScriptModel;
-import com.pragmasoft.study.services.JavaScriptService;
+import com.pragmasoft.study.services.NashornScriptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,43 +16,43 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/scripts")
 public class ScriptsController {
 
-    private JavaScriptService javaScriptService;
+    private NashornScriptService nashornScriptService;
 
     @Autowired
-    public ScriptsController(JavaScriptService javaScriptService) {
-        this.javaScriptService = javaScriptService;
+    public ScriptsController(NashornScriptService nashornScriptService) {
+        this.nashornScriptService = nashornScriptService;
     }
 
-    @PostMapping("/scripts")
+    @PostMapping
     public ResponseEntity<ScriptModel> addScript(@RequestParam("code") String code) {
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
-                .body(javaScriptService.addScript(code));
+                .body(nashornScriptService.addScript(code));
     }
 
-    @GetMapping("/scripts")
+    @GetMapping
     public ResponseEntity<ScriptModel[]> getAllScripts() {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(javaScriptService.getAllScripts());
+                .body(nashornScriptService.getAllScripts());
     }
 
-    @GetMapping("/scripts/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ScriptModel> getScriptById(@PathVariable("id") String id) {
-        ScriptModel scriptModel = javaScriptService.getScriptById(id)
+        ScriptModel scriptModel = nashornScriptService.getScriptById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(scriptModel);
     }
 
-    @DeleteMapping("/scripts/{id}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteById(@PathVariable("id") String id) {
-        if (!javaScriptService.deleteById(id)) {
+        if (!nashornScriptService.deleteById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }

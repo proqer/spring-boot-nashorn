@@ -4,9 +4,9 @@ import com.pragmasoft.study.model.ScriptModel;
 
 import java.util.Optional;
 
-public interface JavaScriptService {
+public interface NashornScriptService {
 
-    ScriptModel addScript(String script);
+    ScriptModel addScript(String scriptCode);
 
     ScriptModel[] getAllScripts();
 
