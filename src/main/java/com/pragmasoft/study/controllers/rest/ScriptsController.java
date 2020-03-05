@@ -50,7 +50,7 @@ public class ScriptsController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable("id") String id) {
         if (!nashornScriptService.deleteById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
