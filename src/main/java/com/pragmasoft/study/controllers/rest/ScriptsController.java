@@ -23,7 +23,11 @@ import java.util.Collection;
 @RequestMapping("/api/v1/scripts")
 public class ScriptsController {
 
-    //TODO metrics
+    //TODO metrics (Prometheus)
+
+    //TODO JAVA 11
+
+    //TODO Integrate Swagger
 
     private NashornScriptService nashornScriptService;
 
