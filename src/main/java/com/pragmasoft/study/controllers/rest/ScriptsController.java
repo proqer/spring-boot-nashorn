@@ -27,7 +27,7 @@ public class ScriptsController {
     }
 
     @PostMapping
-    public ResponseEntity<ScriptModel> addScript(@RequestParam("code") String code) {
+    public ResponseEntity<ScriptModel> addScript(@RequestBody String code) {
         return ResponseEntity
                 .accepted()
                 .body(nashornScriptService.addScript(code));
