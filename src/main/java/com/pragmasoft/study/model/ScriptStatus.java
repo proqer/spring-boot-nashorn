@@ -1,5 +1,5 @@
 package com.pragmasoft.study.model;
 
 public enum ScriptStatus {
-    CREATED, RUNNING, COMPLETED, FAILED
+    CREATED, RUNNING, COMPLETED, STOPPED, FAILED
 }

@@ -1,6 +1,8 @@
 package com.pragmasoft.study;
 
+import com.pragmasoft.study.services.NashornScriptService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
@@ -8,24 +10,38 @@ public class NashornScriptServiceTest {
 
     //TODO UnitTests
 
-    @Test
-    public void addScriptTest() {
+    @Autowired
+    private NashornScriptService nashornScriptService;
 
+    @Test
+    void addScript() {
     }
 
     @Test
-    public void getAllScriptTest() {
-
+    void getAllScripts() {
     }
 
     @Test
-    public void deleteByIdTest() {
-
+    void getScriptById() {
     }
 
     @Test
-    public void getScriptByIdTest() {
-
+    void deleteById() {
     }
 
+    @Test
+    void getScriptCodeById() {
+    }
+
+    @Test
+    void getScriptStatusById() {
+    }
+
+    @Test
+    void getScriptResultById() {
+    }
+
+    @Test
+    void stopScriptExecutionById() {
+    }
 }

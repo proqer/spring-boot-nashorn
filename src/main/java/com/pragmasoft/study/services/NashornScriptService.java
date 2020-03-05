@@ -30,27 +30,44 @@ public interface NashornScriptService {
     Optional<ScriptModel> getScriptById(String id);
 
     /**
+     * Delete script with given id
+     *
      * @param id of script to be deleted
-     * @return true if script was deleted, false otherwise
+     * @return true if script was found and deleted, false otherwise
      */
     boolean deleteById(String id);
 
     /**
+     * Get code of script with given id
+     *
      * @param id of script
      * @return Optional of script code by given id
      */
     Optional<String> getScriptCodeById(String id);
 
     /**
+     * Get current status of script with given id
+     *
      * @param id of script
      * @return Optional of script status by given id
      */
     Optional<String> getScriptStatusById(String id);
 
     /**
+     * Get current result of script with given id
+     *
      * @param id of script
      * @return Optional of script result by given id
      */
     Optional<String> getScriptResultById(String id);
+
+
+    /**
+     * Stop script execution
+     *
+     * @param id of script to be stopped
+     * @return true if script was found and stopped, false otherwise
+     */
+    boolean stopScriptExecutionById(String id);
 
 }

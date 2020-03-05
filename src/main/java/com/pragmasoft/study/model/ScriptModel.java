@@ -35,9 +35,9 @@ public class ScriptModel {
         this.stringWriter = stringWriter;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public String getResult() {
-        return stringWriter == null ? null : stringWriter.toString();
+        return stringWriter == null ? "" : stringWriter.toString();
     }
 
     public String getId() {

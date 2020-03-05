@@ -113,7 +113,9 @@ public class ScriptsController {
      */
     @PutMapping("/{id}/status")
     public String updateStatus(@PathVariable("id") String id) {
-        //TODO
+        if (nashornScriptService.stopScriptExecutionById(id)) {
+            //TODO
+        }
         return null;
     }
 
