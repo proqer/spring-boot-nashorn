@@ -12,6 +12,11 @@ public class ScriptModel {
     @JsonIgnore
     private StringWriter stringWriter;
 
+    @JsonIgnore
+    private String scriptCode;
+
+    //TODO datetime from, to
+
     private ScriptStatus scriptStatus = ScriptStatus.CREATED;
 
     public ScriptStatus getScriptStatus() {
@@ -43,4 +48,21 @@ public class ScriptModel {
         this.id = id;
     }
 
+    public String getScriptCode() {
+        return scriptCode;
+    }
+
+    public void setScriptCode(String scriptCode) {
+        this.scriptCode = scriptCode;
+    }
+
+    @Override
+    public String toString() {
+        return "ScriptModel{" +
+                "id='" + id + '\'' +
+                ", scriptResult='" + getResult() + '\'' +
+                ", scriptCode='" + scriptCode + '\'' +
+                ", scriptStatus=" + scriptStatus +
+                '}';
+    }
 }

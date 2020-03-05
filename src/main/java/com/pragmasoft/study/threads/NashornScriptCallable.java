@@ -33,6 +33,7 @@ public class NashornScriptCallable implements Callable<ScriptModel> {
             scriptEngine.eval(scriptCode);
             scriptModel.setScriptStatus(ScriptStatus.COMPLETED);
         } catch (ScriptException | IOException e) {
+            //TODO Script exception expl.
             scriptModel.setScriptStatus(ScriptStatus.FAILED);
         }
         return scriptModel;

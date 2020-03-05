@@ -3,14 +3,15 @@ package com.pragmasoft.study.services.impl;
 import com.pragmasoft.study.model.ScriptModel;
 import com.pragmasoft.study.services.NashornScriptService;
 import com.pragmasoft.study.threads.NashornScriptCallable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -18,41 +19,73 @@ import java.util.concurrent.Future;
 @Service
 public class NashornScriptServiceImpl implements NashornScriptService {
 
-    private List<ScriptModel> scriptModels = new ArrayList<>();
+    private static final Logger LOG = LoggerFactory.getLogger(NashornScriptServiceImpl.class);
 
-    private Map<String, Future<ScriptModel>> futureResults = new HashMap<>();
+    private Map<String, ScriptModel> scriptModels = new ConcurrentHashMap<>();
 
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ExecutorService executorService = Executors.newSingleThreadExecutor(); //TODO async spring, DI
 
     @Override
     public ScriptModel addScript(String scriptCode) {
         String generatedId = UUID.randomUUID().toString();
         ScriptModel scriptModel = new ScriptModel();
         scriptModel.setId(generatedId);
-        Future<ScriptModel> future = executorService.submit(new NashornScriptCallable(scriptModel, scriptCode));
-        futureResults.put(generatedId, future);
-        scriptModels.add(scriptModel);
+        scriptModel.setScriptCode(scriptCode);
+        Future<ScriptModel> futureScript = executorService.submit(new NashornScriptCallable(scriptModel, scriptCode));//TODO
+        scriptModels.put(generatedId, scriptModel);
+        LOG.debug("Created and started new script: " + scriptModel);
         return scriptModel;
     }
 
     @Override
-    public ScriptModel[] getAllScripts() {
-        return scriptModels.toArray(new ScriptModel[0]);
+    public Collection<ScriptModel> getAllScripts() {
+        return scriptModels.values();
     }
 
     @Override
     public Optional<ScriptModel> getScriptById(String id) {
-        return scriptModels.stream()
-                .filter((scriptModel) -> scriptModel.getId().equals(id))
-                .findFirst();
+        return Optional.ofNullable(scriptModels.get(id));
     }
 
     @Override
     public boolean deleteById(String id) {
-        if (futureResults.containsKey(id)) {
-            futureResults.get(id).cancel(true);
-            futureResults.remove(id);
+//        if (futureResults.containsKey(id)) {
+//            futureResults.get(id).cancel(true);
+//            futureResults.remove(id);
+//        }
+        if (scriptModels.containsKey(id)) {
+            //TODO kill thread
+            scriptModels.remove(id);
+            return true;
+        } else {
+            return false;
         }
-        return scriptModels.removeIf((scriptModel) -> scriptModel.getId().equals(id));
+    }
+
+    @Override
+    public Optional<String> getScriptCodeById(String id) {
+        if (scriptModels.containsKey(id)) {
+            return Optional.ofNullable(scriptModels.get(id).getScriptCode());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<String> getScriptStatusById(String id) {
+        if (scriptModels.containsKey(id)) {
+            return Optional.ofNullable(scriptModels.get(id).getScriptStatus().toString());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<String> getScriptResultById(String id) {
+        if (scriptModels.containsKey(id)) {
+            return Optional.ofNullable(scriptModels.get(id).getResult());
+        } else {
+            return Optional.empty();
+        }
     }
 }
