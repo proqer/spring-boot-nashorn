@@ -25,8 +25,6 @@ public class ScriptsController {
 
     //TODO metrics (Prometheus)
 
-    //TODO JAVA 11
-
     //TODO Integrate Swagger
 
     private NashornScriptService nashornScriptService;
