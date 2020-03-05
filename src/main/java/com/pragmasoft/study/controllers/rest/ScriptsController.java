@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,14 +29,14 @@ public class ScriptsController {
     @PostMapping
     public ResponseEntity<ScriptModel> addScript(@RequestParam("code") String code) {
         return ResponseEntity
-                .status(HttpStatus.ACCEPTED)
+                .accepted()
                 .body(nashornScriptService.addScript(code));
     }
 
     @GetMapping
     public ResponseEntity<ScriptModel[]> getAllScripts() {
         return ResponseEntity
-                .status(HttpStatus.OK)
+                .ok()
                 .body(nashornScriptService.getAllScripts());
     }
 
@@ -45,7 +45,7 @@ public class ScriptsController {
         ScriptModel scriptModel = nashornScriptService.getScriptById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return ResponseEntity
-                .status(HttpStatus.OK)
+                .ok()
                 .body(scriptModel);
     }
 
