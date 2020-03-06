@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.StringWriter;
+import java.time.LocalDateTime;
 
 public class ScriptModel {
 
@@ -15,15 +16,26 @@ public class ScriptModel {
     @JsonIgnore
     private String scriptCode;
 
-    //TODO datetime from, to
+    private LocalDateTime created = LocalDateTime.now();
+
+    private LocalDateTime statusModified = LocalDateTime.now();
 
     private ScriptStatus scriptStatus = ScriptStatus.CREATED;
+
+    public LocalDateTime getCreated() {
+        return created;
+    }
+
+    public LocalDateTime getStatusModified() {
+        return statusModified;
+    }
 
     public ScriptStatus getScriptStatus() {
         return scriptStatus;
     }
 
     public void setScriptStatus(ScriptStatus scriptStatus) {
+        statusModified = LocalDateTime.now();
         this.scriptStatus = scriptStatus;
     }
 
@@ -60,8 +72,10 @@ public class ScriptModel {
     public String toString() {
         return "ScriptModel{" +
                 "id='" + id + '\'' +
-                ", scriptResult='" + getResult() + '\'' +
+                ", currentResult='" + getResult() + '\'' +
                 ", scriptCode='" + scriptCode + '\'' +
+                ", created=" + created +
+                ", statusModified=" + statusModified +
                 ", scriptStatus=" + scriptStatus +
                 '}';
     }
