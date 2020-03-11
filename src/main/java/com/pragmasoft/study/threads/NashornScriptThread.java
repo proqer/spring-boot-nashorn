@@ -9,13 +9,13 @@ import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.StringWriter;
 
-public class NashornScriptCallable implements Runnable {
+public class NashornScriptThread extends Thread {
 
     private static final String NASHORN_ENGINE_NAME = "nashorn";
 
     private ScriptModel scriptModel;
 
-    public NashornScriptCallable(ScriptModel scriptModel) {
+    public NashornScriptThread(ScriptModel scriptModel) {
         this.scriptModel = scriptModel;
     }
 
@@ -28,8 +28,11 @@ public class NashornScriptCallable implements Runnable {
             scriptModel.setScriptStatus(ScriptStatus.RUNNING);
             scriptEngine.eval(scriptModel.getScriptCode());
             scriptModel.setScriptStatus(ScriptStatus.COMPLETED);
-        } catch (ScriptException | IOException e) {
-            //TODO Script exception expl.
+        } catch (ScriptException e) {
+            //TODO Global Exception Handler
+            scriptModel.setScriptFailedExplanation(e.getMessage());
+            scriptModel.setScriptStatus(ScriptStatus.FAILED);
+        } catch (IOException e) {
             scriptModel.setScriptStatus(ScriptStatus.FAILED);
         }
     }

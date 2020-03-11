@@ -2,27 +2,29 @@ package com.pragmasoft.study.services.impl;
 
 import com.pragmasoft.study.model.ScriptModel;
 import com.pragmasoft.study.model.ScriptStatus;
+import com.pragmasoft.study.repository.NashornScriptRepository;
 import com.pragmasoft.study.services.NashornScriptService;
+import com.pragmasoft.study.threads.NashornScriptThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Service
 public class NashornScriptServiceImpl implements NashornScriptService {
 
     private static final Logger LOG = LoggerFactory.getLogger(NashornScriptServiceImpl.class);
 
-    private Map<String, ScriptModel> scriptModels = new ConcurrentHashMap<>();
+    private NashornScriptRepository nashornScriptRepository;
 
-    private ExecutorService executorService = Executors.newSingleThreadExecutor(); //TODO async spring, DI
+    @Autowired
+    public NashornScriptServiceImpl(NashornScriptRepository nashornScriptRepository) {
+        this.nashornScriptRepository = nashornScriptRepository;
+    }
 
     @Override
     public ScriptModel addScript(String scriptCode) {
@@ -30,34 +32,30 @@ public class NashornScriptServiceImpl implements NashornScriptService {
         ScriptModel scriptModel = new ScriptModel();
         scriptModel.setId(generatedId);
         scriptModel.setScriptCode(scriptCode);
-//        Future<ScriptModel> futureScript = executorService.submit(new NashornScriptCallable(scriptModel, scriptCode));//TODO
-        //TODO Start script execution
-//        Thread scriptThread = new Thread();
-//        scriptThread.start();
-        scriptModels.put(generatedId, scriptModel);
+        NashornScriptThread scriptThread = new NashornScriptThread(scriptModel);
+        scriptThread.start();
+        scriptModel.setScriptThread(scriptThread);
+        nashornScriptRepository.save(scriptModel);
         LOG.debug("Created and started new script: {}", scriptModel);
         return scriptModel;
     }
 
     @Override
     public Collection<ScriptModel> getAllScripts() {
-        return scriptModels.values();
+        return nashornScriptRepository.findAll();
     }
 
     @Override
     public Optional<ScriptModel> getScriptById(String id) {
-        return Optional.ofNullable(scriptModels.get(id));
+        return nashornScriptRepository.findById(id);
     }
 
     @Override
     public boolean deleteById(String id) {
-//        if (futureResults.containsKey(id)) {
-//            futureResults.get(id).cancel(true);
-//            futureResults.remove(id);
-//        }
-        if (scriptModels.containsKey(id)) {
-            //TODO kill thread
-            scriptModels.remove(id);
+        Optional<ScriptModel> scriptModel = nashornScriptRepository.findById(id);
+        if (scriptModel.isPresent()) {
+            scriptModel.get().stopScriptExecution();
+            nashornScriptRepository.deleteById(id);
             LOG.debug("Script with id '{}' was removed", id);
             return true;
         } else {
@@ -68,8 +66,9 @@ public class NashornScriptServiceImpl implements NashornScriptService {
 
     @Override
     public Optional<String> getScriptCodeById(String id) {
-        if (scriptModels.containsKey(id)) {
-            return Optional.ofNullable(scriptModels.get(id).getScriptCode());
+        Optional<ScriptModel> scriptModel = nashornScriptRepository.findById(id);
+        if (scriptModel.isPresent()) {
+            return Optional.ofNullable(scriptModel.get().getScriptCode());
         } else {
             LOG.debug("Script with id '{}' does not exist", id);
             return Optional.empty();
@@ -78,8 +77,9 @@ public class NashornScriptServiceImpl implements NashornScriptService {
 
     @Override
     public Optional<String> getScriptStatusById(String id) {
-        if (scriptModels.containsKey(id)) {
-            return Optional.ofNullable(scriptModels.get(id).getScriptStatus().toString());
+        Optional<ScriptModel> scriptModel = nashornScriptRepository.findById(id);
+        if (scriptModel.isPresent()) {
+            return Optional.ofNullable(scriptModel.get().getScriptStatus().toString());
         } else {
             LOG.debug("Script with id '{}' does not exist", id);
             return Optional.empty();
@@ -88,8 +88,9 @@ public class NashornScriptServiceImpl implements NashornScriptService {
 
     @Override
     public Optional<String> getScriptResultById(String id) {
-        if (scriptModels.containsKey(id)) {
-            return Optional.ofNullable(scriptModels.get(id).getResult());
+        Optional<ScriptModel> scriptModel = nashornScriptRepository.findById(id);
+        if (scriptModel.isPresent()) {
+            return Optional.ofNullable(scriptModel.get().getResult());
         } else {
             LOG.debug("Script with id '{}' does not exist", id);
             return Optional.empty();
@@ -98,9 +99,10 @@ public class NashornScriptServiceImpl implements NashornScriptService {
 
     @Override
     public boolean stopScriptExecutionById(String id) {
-        if (scriptModels.containsKey(id)) {
-            ScriptModel scriptModel = scriptModels.get(id);
-            //TODO stop script execution
+        Optional<ScriptModel> optionalScriptModel = nashornScriptRepository.findById(id);
+        if (optionalScriptModel.isPresent()) {
+            ScriptModel scriptModel = optionalScriptModel.get();
+            scriptModel.stopScriptExecution();
             scriptModel.setScriptStatus(ScriptStatus.STOPPED);
             return true;
         } else {
