@@ -29,7 +29,6 @@ public class NashornScriptThread extends Thread {
             scriptEngine.eval(scriptModel.getScriptCode());
             scriptModel.setScriptStatus(ScriptStatus.COMPLETED);
         } catch (ScriptException e) {
-            //TODO Global Exception Handler
             scriptModel.setScriptFailedExplanation(e.getMessage());
             scriptModel.setScriptStatus(ScriptStatus.FAILED);
         } catch (IOException e) {

@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,8 +20,6 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api/v1/scripts")
 public class ScriptsController {
-
-    //TODO metrics (Prometheus)
 
     private NashornScriptService nashornScriptService;
 
@@ -37,7 +35,7 @@ public class ScriptsController {
      * @return response entity with created script model
      */
     @PostMapping
-    public ResponseEntity<ScriptModel> addScript(@RequestParam String code) {
+    public ResponseEntity<ScriptModel> addScript(@RequestBody String code) {
         ScriptModel createdScriptModel = nashornScriptService.addScript(code);
         return ResponseEntity
                 .accepted()
