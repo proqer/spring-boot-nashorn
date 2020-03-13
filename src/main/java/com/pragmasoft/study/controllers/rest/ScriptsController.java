@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponents;
 
-import java.net.URI;
+import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
 
 @RestController
 @RequestMapping("/api/v1/scripts")
@@ -37,9 +39,11 @@ public class ScriptsController {
     @PostMapping
     public ResponseEntity<ScriptModel> addScript(@RequestBody String code) {
         ScriptModel createdScriptModel = nashornScriptService.addScript(code);
+        UriComponents uriComponents = MvcUriComponentsBuilder
+                .fromMethodCall(on(ScriptsController.class).getScriptById(createdScriptModel.getId())).build();
         return ResponseEntity
                 .accepted()
-                .location(URI.create("/api/v1/scripts/" + createdScriptModel.getId()))
+                .location(uriComponents.encode().toUri())
                 .body(createdScriptModel);
     }
 
@@ -51,8 +55,7 @@ public class ScriptsController {
     @GetMapping
     public ResponseEntity<Iterable<ScriptModel>> getAllScripts() {
         return ResponseEntity
-                .ok()
-                .body(nashornScriptService.getAllScripts());
+                .ok(nashornScriptService.getAllScripts());
     }
 
     /**
@@ -64,11 +67,8 @@ public class ScriptsController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ScriptModel> getScriptById(@PathVariable("id") String id) {
-        ScriptModel scriptModel = nashornScriptService.getScriptById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return ResponseEntity
-                .ok()
-                .body(scriptModel);
+                .of(nashornScriptService.getScriptById(id));
     }
 
     /**
