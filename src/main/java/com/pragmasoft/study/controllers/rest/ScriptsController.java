@@ -25,6 +25,18 @@ public class ScriptsController {
 
     private NashornScriptService nashornScriptService;
 
+    //TODO add scriptDTO, list member script dto
+    //TODO SONAR,
+    //TODO interrupted exc
+    //TODO is thread interrupted
+    //TODO expl to result
+    //TODO custom exception
+    //TODO use one script engine with different context
+    //TODO compile script before eval
+    //TODO event mechanism
+    //TODO check java 9 flow api
+    //TODO to js file
+
     @Autowired
     public ScriptsController(NashornScriptService nashornScriptService) {
         this.nashornScriptService = nashornScriptService;
