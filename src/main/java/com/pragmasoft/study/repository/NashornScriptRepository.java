@@ -1,20 +1,20 @@
 package com.pragmasoft.study.repository;
 
-import com.pragmasoft.study.model.ScriptModel;
+import com.pragmasoft.study.domain.Script;
 
 import java.util.Collection;
 import java.util.Optional;
 
 public interface NashornScriptRepository {
 
-    Optional<ScriptModel> findById(String id);
+    Optional<Script> findById(String id);
 
-    Collection<ScriptModel> findAll();
+    Collection<Script> findAll();
 
     boolean existsById(String id);
 
     void deleteById(String id);
 
-    void save(ScriptModel scriptModel);
+    void save(Script script);
 
 }

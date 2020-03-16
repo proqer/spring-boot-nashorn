@@ -1,6 +1,7 @@
 package com.pragmasoft.study.controllers.rest;
 
-import com.pragmasoft.study.model.ScriptModel;
+import com.pragmasoft.study.dto.ScriptDto;
+import com.pragmasoft.study.dto.mapper.ScriptMapper;
 import com.pragmasoft.study.services.NashornScriptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
 
+import java.util.stream.Collectors;
+
 import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
 
 @RestController
@@ -25,14 +28,7 @@ public class ScriptsController {
 
     private NashornScriptService nashornScriptService;
 
-    //TODO add scriptDTO, list member script dto
-    //TODO SONAR,
-    //TODO interrupted exc
-    //TODO is thread interrupted
-    //TODO expl to result
-    //TODO custom exception
     //TODO use one script engine with different context
-    //TODO compile script before eval
     //TODO event mechanism
     //TODO check java 9 flow api
     //TODO to js file
@@ -49,14 +45,14 @@ public class ScriptsController {
      * @return response entity with created script model
      */
     @PostMapping
-    public ResponseEntity<ScriptModel> addScript(@RequestBody String code) {
-        ScriptModel createdScriptModel = nashornScriptService.addScript(code);
+    public ResponseEntity<String> addScript(@RequestBody String code) {
+        String id = nashornScriptService.addScript(code);
         UriComponents uriComponents = MvcUriComponentsBuilder
-                .fromMethodCall(on(ScriptsController.class).getScriptById(createdScriptModel.getId())).build();
+                .fromMethodCall(on(ScriptsController.class).getScriptById(id)).build();
         return ResponseEntity
                 .accepted()
                 .location(uriComponents.encode().toUri())
-                .body(createdScriptModel);
+                .build();
     }
 
     /**
@@ -65,9 +61,11 @@ public class ScriptsController {
      * @return response entity with all existing scripts
      */
     @GetMapping
-    public ResponseEntity<Iterable<ScriptModel>> getAllScripts() {
-        return ResponseEntity
-                .ok(nashornScriptService.getAllScripts());
+    public Iterable<ScriptDto> getAllScripts() {
+        return nashornScriptService.getAllScripts()
+                .stream()
+                .map(ScriptMapper::toScriptDto)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -78,9 +76,8 @@ public class ScriptsController {
      * @return script model by given id
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ScriptModel> getScriptById(@PathVariable("id") String id) {
-        return ResponseEntity
-                .of(nashornScriptService.getScriptById(id));
+    public ScriptDto getScriptById(@PathVariable("id") String id) {
+        return ScriptMapper.toScriptDto(nashornScriptService.getScriptById(id));
     }
 
     /**
@@ -106,8 +103,7 @@ public class ScriptsController {
      */
     @GetMapping("/{id}/status")
     public String getScriptStatus(@PathVariable("id") String id) {
-        return nashornScriptService.getScriptStatusById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return nashornScriptService.getScriptStatusById(id);
     }
 
     /**
@@ -119,9 +115,7 @@ public class ScriptsController {
     @PostMapping("/{id}/stop")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void stopScriptExecution(@PathVariable("id") String id) {
-        if (!nashornScriptService.stopScriptExecutionById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        nashornScriptService.stopScriptExecutionById(id);
     }
 
     /**
@@ -133,8 +127,7 @@ public class ScriptsController {
      */
     @GetMapping("/{id}/code")
     public String getScriptCode(@PathVariable("id") String id) {
-        return nashornScriptService.getScriptCodeById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return nashornScriptService.getScriptCodeById(id);
     }
 
     /**
@@ -146,8 +139,7 @@ public class ScriptsController {
      */
     @GetMapping("/{id}/result")
     public String getScriptResult(@PathVariable("id") String id) {
-        return nashornScriptService.getScriptResultById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return nashornScriptService.getScriptResultById(id);
     }
 
 }

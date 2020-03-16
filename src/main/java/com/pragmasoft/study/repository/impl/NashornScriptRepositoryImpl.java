@@ -1,6 +1,6 @@
 package com.pragmasoft.study.repository.impl;
 
-import com.pragmasoft.study.model.ScriptModel;
+import com.pragmasoft.study.domain.Script;
 import com.pragmasoft.study.repository.NashornScriptRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,30 +12,30 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 public class NashornScriptRepositoryImpl implements NashornScriptRepository {
 
-    private Map<String, ScriptModel> scriptModels = new ConcurrentHashMap<>();
+    private Map<String, Script> scripts = new ConcurrentHashMap<>();
 
     @Override
-    public Optional<ScriptModel> findById(String id) {
-        return Optional.ofNullable(scriptModels.get(id));
+    public Optional<Script> findById(String id) {
+        return Optional.ofNullable(scripts.get(id));
     }
 
     @Override
-    public Collection<ScriptModel> findAll() {
-        return scriptModels.values();
+    public Collection<Script> findAll() {
+        return scripts.values();
     }
 
     @Override
     public boolean existsById(String id) {
-        return scriptModels.containsKey(id);
+        return scripts.containsKey(id);
     }
 
     @Override
     public void deleteById(String id) {
-        scriptModels.remove(id);
+        scripts.remove(id);
     }
 
     @Override
-    public void save(ScriptModel scriptModel) {
-        scriptModels.put(scriptModel.getId(), scriptModel);
+    public void save(Script script) {
+        scripts.put(script.getId(), script);
     }
 }

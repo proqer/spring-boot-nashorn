@@ -1,9 +1,8 @@
 package com.pragmasoft.study.services;
 
-import com.pragmasoft.study.model.ScriptModel;
+import com.pragmasoft.study.domain.Script;
 
 import java.util.Collection;
-import java.util.Optional;
 
 public interface NashornScriptService {
 
@@ -11,23 +10,23 @@ public interface NashornScriptService {
      * Asynchronously execute given script
      *
      * @param scriptCode to be executed
-     * @return Created script model
+     * @return Id of created script
      */
-    ScriptModel addScript(String scriptCode);
+    String addScript(String scriptCode);
 
     /**
      * Get information about all scripts
      *
      * @return Collection with all existing scripts
      */
-    Collection<ScriptModel> getAllScripts();
+    Collection<Script> getAllScripts();
 
     /**
      * Get information about script with given id
      *
-     * @return Optional of script model by given id
+     * @return Script by given id
      */
-    Optional<ScriptModel> getScriptById(String id);
+    Script getScriptById(String id);
 
     /**
      * Delete script with given id
@@ -41,25 +40,25 @@ public interface NashornScriptService {
      * Get code of script with given id
      *
      * @param id of script
-     * @return Optional of script code by given id
+     * @return Script code by given id
      */
-    Optional<String> getScriptCodeById(String id);
+    String getScriptCodeById(String id);
 
     /**
      * Get current status of script with given id
      *
      * @param id of script
-     * @return Optional of script status by given id
+     * @return Script status by given id
      */
-    Optional<String> getScriptStatusById(String id);
+    String getScriptStatusById(String id);
 
     /**
      * Get current result of script with given id
      *
      * @param id of script
-     * @return Optional of script result by given id
+     * @return Script result by given id
      */
-    Optional<String> getScriptResultById(String id);
+    String getScriptResultById(String id);
 
 
     /**
