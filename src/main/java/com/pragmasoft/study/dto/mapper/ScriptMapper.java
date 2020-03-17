@@ -14,6 +14,7 @@ public class ScriptMapper {
         scriptDto.setCreated(script.getCreated());
         scriptDto.setStatusModified(script.getStatusModified());
         scriptDto.setResult(script.getResult());
+        scriptDto.setScriptStatus(script.getScriptStatus());
         return scriptDto;
     }
 }

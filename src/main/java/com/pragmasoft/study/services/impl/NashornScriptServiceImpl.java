@@ -7,6 +7,7 @@ import com.pragmasoft.study.services.NashornScriptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -19,16 +20,28 @@ public class NashornScriptServiceImpl implements NashornScriptService {
 
     private NashornScriptRepository nashornScriptRepository;
 
+    private Script script;
+
     @Autowired
     public NashornScriptServiceImpl(NashornScriptRepository nashornScriptRepository) {
         this.nashornScriptRepository = nashornScriptRepository;
     }
 
+    @Autowired
+    public void setScript(Script script) {
+        this.script = script;
+    }
+
+    @Lookup
+    public Script getScript() {
+        return null;
+    }
+
     @Override
     public String addScript(String scriptCode) {
-        Script script = new Script();
-        script.setScriptCode(scriptCode);
-        script.start();
+        script = getScript();
+        script.compileScript(scriptCode);
+        script.asyncEvaluateScript();
         nashornScriptRepository.save(script);
         LOG.debug("Created and started new script: {}", script);
         return script.getId();
@@ -42,14 +55,14 @@ public class NashornScriptServiceImpl implements NashornScriptService {
     @Override
     public Script getScriptById(String id) {
         return nashornScriptRepository.findById(id)
-                .orElseThrow(ScriptNotFoundException::new);
+                .orElseThrow(() -> new ScriptNotFoundException(id));
     }
 
     @Override
     public boolean deleteById(String id) {
-        Optional<Script> script = nashornScriptRepository.findById(id);
-        if (script.isPresent()) {
-            script.get().stop();
+        Optional<Script> optionalScript = nashornScriptRepository.findById(id);
+        if (optionalScript.isPresent()) {
+            optionalScript.get().stop();
             nashornScriptRepository.deleteById(id);
             LOG.debug("Script with id '{}' was removed", id);
             return true;
@@ -76,10 +89,10 @@ public class NashornScriptServiceImpl implements NashornScriptService {
 
     @Override
     public boolean stopScriptExecutionById(String id) {
-        Optional<Script> optionalScript = nashornScriptRepository.findById(id);
-        if (optionalScript.isPresent()) {
-            Script script = optionalScript.get();
-            script.stop();
+        Optional<Script> optionalScriptById = nashornScriptRepository.findById(id);
+        if (optionalScriptById.isPresent()) {
+            Script scriptById = optionalScriptById.get();
+            scriptById.stop();
             return true;
         } else {
             LOG.debug("Script with id '{}' does not exist", id);

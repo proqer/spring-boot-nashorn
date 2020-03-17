@@ -7,7 +7,10 @@ import com.pragmasoft.study.exception.ScriptStoppingException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -19,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
+@Component
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class Script {
 
     private static final String NASHORN_ENGINE_NAME = "nashorn";
@@ -38,6 +43,8 @@ public class Script {
     private LocalDateTime statusModified;
 
     private Thread scriptThread;
+
+    private CompiledScript compiledScript;
 
     public ScriptStatus getScriptStatus() {
         return scriptStatus;
@@ -60,25 +67,12 @@ public class Script {
         return scriptCode;
     }
 
-    public void setScriptCode(String scriptCode) {
-        this.scriptCode = scriptCode;
-    }
-
     public LocalDateTime getCreated() {
         return created;
     }
 
     public LocalDateTime getStatusModified() {
         return statusModified;
-    }
-
-    @Async
-    public void start() {
-        scriptThread = Thread.currentThread();
-        LOG.debug("Run script in thread: {}", scriptThread.getName());
-        ScriptEngine scriptEngine = createScriptEngine();
-        CompiledScript compiledScript = compileScript(scriptEngine);
-        evaluateScript(compiledScript);
     }
 
     private ScriptEngine createScriptEngine() {
@@ -88,23 +82,28 @@ public class Script {
         return scriptEngine;
     }
 
-    private CompiledScript compileScript(ScriptEngine scriptEngine) {
-        CompiledScript compiledScript;
+    public void compileScript(String scriptCode) {
+        this.scriptCode = scriptCode;
+        ScriptEngine scriptEngine = createScriptEngine();
         try {
             compiledScript = ((Compilable) scriptEngine).compile(scriptCode);
         } catch (ScriptException e) {
             setScriptStatus(ScriptStatus.FAILED);
+            stringWriter.append(e.getMessage());
             throw new ScriptCompilationException(e);
         }
-        return compiledScript;
     }
 
-    private void evaluateScript(CompiledScript compiledScript) {
+    @Async
+    public void asyncEvaluateScript() {
+        scriptThread = Thread.currentThread();
+        LOG.debug("Run script in thread: {}", scriptThread.getName());
         setScriptStatus(ScriptStatus.RUNNING);
         try {
             compiledScript.eval();
         } catch (ScriptException e) {
             setScriptStatus(ScriptStatus.FAILED);
+            stringWriter.append(e.getMessage());
             throw new ScriptRuntimeException(e);
         }
         setScriptStatus(ScriptStatus.COMPLETED);
