@@ -4,7 +4,6 @@ import com.pragmasoft.study.dto.ScriptStatus;
 import com.pragmasoft.study.exception.ScriptCompilationException;
 import com.pragmasoft.study.exception.ScriptRuntimeException;
 import com.pragmasoft.study.exception.ScriptStoppingException;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -17,6 +16,7 @@ import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -133,7 +133,11 @@ public class Script {
             throw new ScriptStoppingException();
         } finally {
             setScriptStatus(ScriptStatus.STOPPED);
-            IOUtils.closeQuietly(stringWriter);
+            try {
+                stringWriter.close();
+            } catch (IOException e) {
+                //Do nothing
+            }
         }
     }
 }
