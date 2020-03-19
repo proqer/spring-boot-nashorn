@@ -28,10 +28,7 @@ public class ScriptsController {
 
     private NashornScriptService nashornScriptService;
 
-    //TODO use one script engine with different context
     //TODO event mechanism
-    //TODO check java 9 flow api
-    //TODO to js file
 
     @Autowired
     public ScriptsController(NashornScriptService nashornScriptService) {

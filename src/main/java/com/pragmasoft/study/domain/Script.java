@@ -2,10 +2,10 @@ package com.pragmasoft.study.domain;
 
 import com.pragmasoft.study.dto.ScriptStatus;
 import com.pragmasoft.study.exception.ScriptCompilationException;
-import com.pragmasoft.study.exception.ScriptRuntimeException;
 import com.pragmasoft.study.exception.ScriptStoppingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 
 import javax.script.Compilable;
 import javax.script.CompiledScript;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.io.IOException;
+import javax.script.SimpleScriptContext;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -26,9 +26,10 @@ import java.util.UUID;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class Script {
 
-    private static final String NASHORN_ENGINE_NAME = "nashorn";
-
     private static final Logger LOG = LoggerFactory.getLogger(Script.class);
+
+    @Autowired
+    private ScriptEngine scriptEngine;
 
     private String id = UUID.randomUUID().toString();
 
@@ -63,6 +64,14 @@ public class Script {
         return id;
     }
 
+    public StringWriter getStringWriter() {
+        return stringWriter;
+    }
+
+    public CompiledScript getCompiledScript() {
+        return compiledScript;
+    }
+
     public String getScriptCode() {
         return scriptCode;
     }
@@ -75,16 +84,20 @@ public class Script {
         return statusModified;
     }
 
-    private ScriptEngine createScriptEngine() {
-        ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName(NASHORN_ENGINE_NAME);
+    public Thread getScriptThread() {
+        return scriptThread;
+    }
+
+    private void initScriptEngineContext() {
         stringWriter = new StringWriter();
-        scriptEngine.getContext().setWriter(stringWriter);
-        return scriptEngine;
+        ScriptContext scriptContext = new SimpleScriptContext();
+        scriptContext.setWriter(stringWriter);
+        scriptEngine.setContext(scriptContext);
     }
 
     public void compileScript(String scriptCode) {
         this.scriptCode = scriptCode;
-        ScriptEngine scriptEngine = createScriptEngine();
+        initScriptEngineContext();
         try {
             compiledScript = ((Compilable) scriptEngine).compile(scriptCode);
         } catch (ScriptException e) {
@@ -101,12 +114,11 @@ public class Script {
         setScriptStatus(ScriptStatus.RUNNING);
         try {
             compiledScript.eval();
+            setScriptStatus(ScriptStatus.COMPLETED);
         } catch (ScriptException e) {
             setScriptStatus(ScriptStatus.FAILED);
             stringWriter.append(e.getMessage());
-            throw new ScriptRuntimeException(e);
         }
-        setScriptStatus(ScriptStatus.COMPLETED);
     }
 
     public void stop() {
@@ -124,45 +136,15 @@ public class Script {
             scriptThread.interrupt();
             Thread.sleep(2000);
             if (!scriptThread.isAlive()) {
+                setScriptStatus(ScriptStatus.STOPPED);
                 return;
             }
             LOG.debug("Stopping thread {}", scriptThread.getName());
             scriptThread.stop();
+            setScriptStatus(ScriptStatus.STOPPED);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new ScriptStoppingException();
-        } finally {
-            setScriptStatus(ScriptStatus.STOPPED);
-            try {
-                stringWriter.close();
-            } catch (IOException e) {
-                //Do nothing
-            }
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
