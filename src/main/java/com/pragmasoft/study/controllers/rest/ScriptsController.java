@@ -28,8 +28,6 @@ public class ScriptsController {
 
     private NashornScriptService nashornScriptService;
 
-    //TODO event mechanism
-
     @Autowired
     public ScriptsController(NashornScriptService nashornScriptService) {
         this.nashornScriptService = nashornScriptService;

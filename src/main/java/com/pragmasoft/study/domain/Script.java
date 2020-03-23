@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import javax.script.Compilable;
@@ -21,6 +22,7 @@ import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.Future;
 
 @Component
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -46,6 +48,8 @@ public class Script {
     private Thread scriptThread;
 
     private CompiledScript compiledScript;
+
+    private SimpleScriptContext scriptContext;
 
     public ScriptStatus getScriptStatus() {
         return scriptStatus;
@@ -90,9 +94,9 @@ public class Script {
 
     private void initScriptEngineContext() {
         stringWriter = new StringWriter();
-        ScriptContext scriptContext = new SimpleScriptContext();
+        scriptContext = new SimpleScriptContext();
         scriptContext.setWriter(stringWriter);
-        scriptEngine.setContext(scriptContext);
+        scriptContext.setBindings(scriptEngine.createBindings(), ScriptContext.ENGINE_SCOPE);
     }
 
     public void compileScript(String scriptCode) {
@@ -108,17 +112,18 @@ public class Script {
     }
 
     @Async
-    public void asyncEvaluateScript() {
+    public Future<Script> asyncEvaluateScript() {
         scriptThread = Thread.currentThread();
         LOG.debug("Run script in thread: {}", scriptThread.getName());
         setScriptStatus(ScriptStatus.RUNNING);
         try {
-            compiledScript.eval();
+            compiledScript.eval(scriptContext);
             setScriptStatus(ScriptStatus.COMPLETED);
         } catch (ScriptException e) {
             setScriptStatus(ScriptStatus.FAILED);
             stringWriter.append(e.getMessage());
         }
+        return new AsyncResult<>(this);
     }
 
     public void stop() {
@@ -129,7 +134,7 @@ public class Script {
                 return;
             }
             if (!scriptThread.isAlive()) {
-                LOG.debug("Thread {} is not alive", scriptThread.getName());
+                LOG.debug("Thread {} is not alive, state is {}", scriptThread.getName(), scriptThread.getState());
                 return;
             }
             LOG.debug("Interrupting thread {}", scriptThread.getName());
