@@ -3,11 +3,11 @@ package com.pragmasoft.study.throttling;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalUnit;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class ThrottlerImpl implements Throttler {
 
-    private Queue<LocalDateTime> localDateTimes = new ConcurrentLinkedQueue<>();
+    private Queue<LocalDateTime> expirationDateTimes;
 
     private int numberOfRequests;
     private int time;
@@ -17,27 +17,36 @@ public class ThrottlerImpl implements Throttler {
         this.numberOfRequests = numberOfRequests;
         this.time = time;
         this.temporalUnit = temporalUnit;
+        expirationDateTimes = new ArrayBlockingQueue<>(numberOfRequests);
+
     }
 
     @Override
     public void call(Runnable runnable) {
         if (!shouldWait()) {
             runnable.run();
-            localDateTimes.add(LocalDateTime.now());
         }
     }
 
-    private boolean shouldWait() {
-        if (localDateTimes.size() < numberOfRequests) {
+    private synchronized boolean shouldWait() {
+        if (isNotFullExpirationQueue()) {
+            expirationDateTimes.add(LocalDateTime.now().plus(time, temporalUnit));
             return false;
         }
-        LocalDateTime firstElementLocalDateTime = localDateTimes.element();
-        boolean tooEarly = firstElementLocalDateTime.isAfter(LocalDateTime.now().minus(time, temporalUnit));
-        if (!tooEarly) {
-            localDateTimes.remove();
-            return false;
+        if (isNotTooEarly()) {
+            expirationDateTimes.remove();
+            return !expirationDateTimes.offer(LocalDateTime.now().plus(time, temporalUnit));
         }
         return true;
+    }
+
+    private boolean isNotFullExpirationQueue() {
+        return expirationDateTimes.size() < numberOfRequests;
+    }
+
+    private boolean isNotTooEarly() {
+        LocalDateTime oldestExpirationDateTime = expirationDateTimes.element();
+        return oldestExpirationDateTime.isBefore(LocalDateTime.now());
     }
 
 }
