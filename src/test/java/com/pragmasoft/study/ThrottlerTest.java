@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Test;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -72,13 +72,13 @@ public class ThrottlerTest {
             }
         };
         ExecutorService executorService = Executors.newFixedThreadPool(10);
-        List<Future<?>> futureList = new ArrayList<>();
+        List<CompletableFuture<Void>> futureList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            futureList.add(executorService.submit(throttlingCallerRunnable));
+            futureList.add(CompletableFuture.runAsync(throttlingCallerRunnable, executorService));
         }
-        for (Future<?> future : futureList) {
-            future.get();
-        }
+        CompletableFuture<Void> combinedFuture =
+                CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0]));
+        combinedFuture.get();
         assertEquals(2, rx_count.get());
     }
 
